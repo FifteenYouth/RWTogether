@@ -1,0 +1,16 @@
+backend/target/
+*.class
+frontend/node_modules/
+frontend/dist/
+.idea/
+*.iml
+.vscode/
+.env
+*.env.local
+.DS_Store
+Thumbs.db
+.superpowers/
+*.log
+frontend/.env
+.trae/
+docs/superpowers/
