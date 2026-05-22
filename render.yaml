@@ -1,13 +1,12 @@
 services:
   - type: web
     name: rwtogether-backend
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    buildFilter:
-      paths:
-        - backend/**
+    runtime: java
+    buildCommand: cd backend && ./mvnw package -DskipTests
+    startCommand: cd backend && java -Xms256m -Xmx512m -jar target/*.jar
     envVars:
+      - key: JAVA_VERSION
+        value: "17"
       - key: SPRING_DATASOURCE_URL
         sync: false
       - key: SPRING_DATASOURCE_USERNAME
