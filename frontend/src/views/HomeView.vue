@@ -61,6 +61,20 @@
         </button>
       </div>
 
+      <!-- 全部作品 -->
+      <section v-if="filteredWorks.length" class="mb-10">
+        <h2 class="text-lg font-semibold text-apple-text mb-4">全部作品</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <WorkCard
+            v-for="work in filteredWorks"
+            :key="work.id"
+            :work="work"
+            :status="work.status"
+            @click="router.push(`/works/${work.id}`)"
+          />
+        </div>
+      </section>
+
       <!-- 正在追 -->
       <section v-if="watchingWorks.length" class="mb-10">
         <h2 class="text-lg font-semibold text-apple-text mb-4">正在追</h2>
@@ -69,7 +83,7 @@
             v-for="work in watchingWorks"
             :key="work.id"
             :work="work"
-            status="WATCHING"
+            :status="work.status"
             @click="router.push(`/works/${work.id}`)"
           />
         </div>
@@ -83,16 +97,16 @@
             v-for="work in wantWorks"
             :key="work.id"
             :work="work"
-            status="WANT"
+            :status="work.status"
             @click="router.push(`/works/${work.id}`)"
           />
         </div>
       </section>
 
       <!-- 空状态 -->
-      <div v-if="!watchingWorks.length && !wantWorks.length" class="text-center py-20">
+      <div v-if="!filteredWorks.length" class="text-center py-20">
         <p class="text-5xl mb-4">🔍</p>
-        <p class="text-apple-gray text-sm">还没有标记任何作品</p>
+        <p class="text-apple-gray text-sm">还没有任何作品</p>
         <button @click="showAddModal = true" class="mt-4 text-apple-blue text-sm font-medium hover:underline">
           添加第一部作品
         </button>
@@ -129,23 +143,35 @@ const tabs = [
   { label: '阅读', value: 'BOOK' },
 ]
 
-const watchingWorks = computed(() => works.value.filter(w => w.status === 'WATCHING'))
-const wantWorks = computed(() => works.value.filter(w => w.status === 'WANT'))
+// 按分类标签过滤的作品
+const filteredWorks = computed(() => {
+  if (activeTab.value === 'all') return works.value
+  return works.value.filter(w => w.type === activeTab.value)
+})
+
+const watchingWorks = computed(() => filteredWorks.value.filter(w => w.status === 'WATCHING'))
+const wantWorks = computed(() => filteredWorks.value.filter(w => w.status === 'WANT'))
 
 function goSearch(q) {
   router.push(`/search?q=${q}`)
 }
 
 function onWorkAdded(work) {
-  router.push(`/works/${work.id}`)
+  // 添加成功后刷新列表
+  loadWorks()
+  showAddModal.value = false
 }
 
-onMounted(async () => {
+async function loadWorks() {
   try {
     const res = await worksApi.list()
     works.value = res.data
   } catch (e) {
     console.error('加载作品失败', e)
   }
+}
+
+onMounted(() => {
+  loadWorks()
 })
 </script>
