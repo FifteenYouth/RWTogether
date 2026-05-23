@@ -1,16 +1,61 @@
 version: '3.8'
+
 services:
+  # ---------- Nginx 反向代理 ----------
+  nginx:
+    image: nginx:alpine
+    container_name: rwtogether-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - frontend-dist:/usr/share/nginx/html
+    depends_on:
+      - backend
+    restart: always
+
+  # ---------- Spring Boot 后端 ----------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rwtogether-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rwtogether?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-rwtogether}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-rwtogether123}
+      JWT_SECRET: ${JWT_SECRET:-rwtogether-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256}
+      TMDB_API_KEY: ${TMDB_API_KEY:-your-tmdb-api-key}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: always
+
+  # ---------- MySQL 数据库 ----------
   mysql:
     image: mysql:8.0
     container_name: rwtogether-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: rwtogether
-      MYSQL_USER: rwtogether
-      MYSQL_PASSWORD: rwtogether123
+      MYSQL_USER: ${DB_USERNAME:-rwtogether}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-rwtogether123}
     ports:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
 volumes:
   mysql-data:
+  frontend-dist:

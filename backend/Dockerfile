@@ -8,5 +8,5 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENV JAVA_OPTS="-Xms128m -Xmx180m -XX:+UseSerialGC -XX:MaxMetaspaceSize=64m -XX:CompressedClassSpaceSize=16m"
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
