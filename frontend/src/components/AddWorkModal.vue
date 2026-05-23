@@ -276,6 +276,7 @@ async function search() {
 
 async function importWork(item) {
   submitting.value = true
+  console.log('[importWork] item:', JSON.stringify(item))
   try {
     const res = await worksApi.importFromApi({
       apiSource: item.apiSource,
@@ -290,7 +291,10 @@ async function importWork(item) {
     emit('added', res.data)
     emit('close')
   } catch (e) {
-    console.error('导入失败', e)
+    console.error('[importWork] 导入失败', e)
+    console.error('[importWork] 请求配置:', e.config)
+    console.error('[importWork] 响应状态:', e.response?.status)
+    console.error('[importWork] 响应数据:', e.response?.data)
   } finally {
     submitting.value = false
   }
