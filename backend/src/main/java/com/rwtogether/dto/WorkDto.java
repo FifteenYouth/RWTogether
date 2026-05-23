@@ -15,4 +15,7 @@ public class WorkDto {
     private String type;
     private Integer totalEpisodes;
     private String apiSource;
+
+    // 当前用户对该作品的状态（WANT / WATCHING / DONE / DROPPED）
+    private String status;
 }

@@ -122,7 +122,7 @@ public class WorkService {
             works = workRepository.findAll();
         }
 
-        // 按用户进度筛选
+        // 按用户进度筛选（仅在指定了 status 时），并填充用户状态
         return works.stream()
                 .filter(w -> {
                     if (status != null) {
@@ -130,9 +130,10 @@ public class WorkService {
                                 .map(uw -> uw.getStatus().name().equals(status))
                                 .orElse(false);
                     }
-                    return userWorkRepository.findByUserIdAndWorkId(userId, w.getId()).isPresent();
+                    // 未指定 status 时返回所有作品
+                    return true;
                 })
-                .map(this::toDto)
+                .map(w -> toDto(w, userId))
                 .collect(Collectors.toList());
     }
 
@@ -180,13 +181,24 @@ public class WorkService {
     }
 
     private WorkDto toDto(Work work) {
+        return toDto(work, null);
+    }
+
+    private WorkDto toDto(Work work, Long userId) {
+        String userStatus = null;
+        if (userId != null) {
+            userStatus = userWorkRepository.findByUserIdAndWorkId(userId, work.getId())
+                    .map(uw -> uw.getStatus().name())
+                    .orElse(null);
+        }
         return new WorkDto(
                 work.getId(),
                 work.getTitle(),
                 work.getCoverUrl(),
                 work.getType().name(),
                 work.getTotalEpisodes(),
-                work.getApiSource()
+                work.getApiSource(),
+                userStatus
         );
     }
 }

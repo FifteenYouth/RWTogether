@@ -19,6 +19,7 @@ import java.util.Map;
 public class WorkController {
 
     private final WorkService workService;
+    private final ProgressService progressService;
 
     @GetMapping
     public ResponseEntity<List<WorkDto>> list(@RequestParam(required = false) String type,
@@ -41,14 +42,22 @@ public class WorkController {
     }
 
     @PostMapping
-    public ResponseEntity<WorkDto> create(@RequestBody Map<String, Object> workData) {
-        return ResponseEntity.ok(workService.createWorkManual(workData));
+    public ResponseEntity<WorkDto> create(@RequestBody Map<String, Object> workData, Authentication auth) {
+        Long userId = (Long) auth.getPrincipal();
+        WorkDto work = workService.createWorkManual(workData);
+        // 自动为当前用户标记为"想看"
+        progressService.setProgress(userId, work.getId(), "WANT", null, null);
+        return ResponseEntity.ok(work);
     }
 
     @PostMapping("/import")
-    public ResponseEntity<WorkDto> importFromApi(@RequestBody Map<String, Object> importData) {
+    public ResponseEntity<WorkDto> importFromApi(@RequestBody Map<String, Object> importData, Authentication auth) {
+        Long userId = (Long) auth.getPrincipal();
         String apiSource = (String) importData.get("apiSource");
         String apiId = (String) importData.get("apiId");
-        return ResponseEntity.ok(workService.importFromApi(apiSource, apiId, importData));
+        WorkDto work = workService.importFromApi(apiSource, apiId, importData);
+        // 自动为当前用户标记为"想看"
+        progressService.setProgress(userId, work.getId(), "WANT", null, null);
+        return ResponseEntity.ok(work);
     }
 }

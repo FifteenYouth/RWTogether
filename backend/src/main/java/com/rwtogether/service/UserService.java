@@ -44,7 +44,8 @@ public class UserService {
                             work.getCoverUrl(),
                             work.getType().name(),
                             work.getTotalEpisodes(),
-                            work.getApiSource()
+                            work.getApiSource(),
+                            uw.getStatus().name()
                     );
                 })
                 .collect(Collectors.toList());

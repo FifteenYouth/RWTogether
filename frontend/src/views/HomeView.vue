@@ -129,8 +129,8 @@ const tabs = [
   { label: '阅读', value: 'BOOK' },
 ]
 
-const watchingWorks = computed(() => works.value.filter(w => w._status === 'WATCHING'))
-const wantWorks = computed(() => works.value.filter(w => w._status === 'WANT'))
+const watchingWorks = computed(() => works.value.filter(w => w.status === 'WATCHING'))
+const wantWorks = computed(() => works.value.filter(w => w.status === 'WANT'))
 
 function goSearch(q) {
   router.push(`/search?q=${q}`)
