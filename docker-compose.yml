@@ -11,7 +11,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/ssl:/etc/nginx/ssl
-      - frontend-dist:/usr/share/nginx/html
+      - ./nginx/html:/usr/share/nginx/html
     depends_on:
       - backend
     restart: always
@@ -58,4 +58,3 @@ services:
 
 volumes:
   mysql-data:
-  frontend-dist:
