@@ -47,6 +47,8 @@ public class WorkController {
         WorkDto work = workService.createWorkManual(workData, userId);
         // 自动为当前用户标记为"想看"
         progressService.setProgress(userId, work.getId(), "WANT", null, null);
+        // 重新查询以获取更新后的状态
+        work.setStatus("WANT");
         return ResponseEntity.ok(work);
     }
 
@@ -58,6 +60,8 @@ public class WorkController {
         WorkDto work = workService.importFromApi(apiSource, apiId, importData, userId);
         // 自动为当前用户标记为"想看"
         progressService.setProgress(userId, work.getId(), "WANT", null, null);
+        // 重新查询以获取更新后的状态
+        work.setStatus("WANT");
         return ResponseEntity.ok(work);
     }
 }
