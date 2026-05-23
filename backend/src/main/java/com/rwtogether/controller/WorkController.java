@@ -44,7 +44,7 @@ public class WorkController {
     @PostMapping
     public ResponseEntity<WorkDto> create(@RequestBody Map<String, Object> workData, Authentication auth) {
         Long userId = (Long) auth.getPrincipal();
-        WorkDto work = workService.createWorkManual(workData);
+        WorkDto work = workService.createWorkManual(workData, userId);
         // 自动为当前用户标记为"想看"
         progressService.setProgress(userId, work.getId(), "WANT", null, null);
         return ResponseEntity.ok(work);
@@ -55,7 +55,7 @@ public class WorkController {
         Long userId = (Long) auth.getPrincipal();
         String apiSource = (String) importData.get("apiSource");
         String apiId = (String) importData.get("apiId");
-        WorkDto work = workService.importFromApi(apiSource, apiId, importData);
+        WorkDto work = workService.importFromApi(apiSource, apiId, importData, userId);
         // 自动为当前用户标记为"想看"
         progressService.setProgress(userId, work.getId(), "WANT", null, null);
         return ResponseEntity.ok(work);

@@ -138,21 +138,21 @@ public class WorkService {
     }
 
     @Transactional
-    public WorkDto createWorkManual(Map<String, Object> workData) {
+    public WorkDto createWorkManual(Map<String, Object> workData, Long userId) {
         Work work = findOrCreateWork(workData);
-        return toDto(work);
+        return toDto(work, userId);
     }
 
     @Transactional
-    public WorkDto importFromApi(String apiSource, String apiId, Map<String, Object> fallbackData) {
+    public WorkDto importFromApi(String apiSource, String apiId, Map<String, Object> fallbackData, Long userId) {
         if (apiSource == null || apiId == null) {
-            return createWorkManual(fallbackData);
+            return createWorkManual(fallbackData, userId);
         }
 
         // 先检查是否已存在
         Optional<Work> existing = workRepository.findByApiSourceAndApiId(apiSource, apiId);
         if (existing.isPresent()) {
-            return toDto(existing.get());
+            return toDto(existing.get(), userId);
         }
 
         // 尝试从 API 获取详细信息
@@ -163,7 +163,7 @@ public class WorkService {
         }
 
         Work work = findOrCreateWork(detailData);
-        return toDto(work);
+        return toDto(work, userId);
     }
 
     private Map<String, Object> fetchApiDetail(String apiSource, String apiId) {

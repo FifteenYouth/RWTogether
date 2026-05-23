@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:rwtogether;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+jwt:
+  secret: rwtogether-jwt-secret-key-a7f3b9c2e5d1f8a6b4c0d9e7f2a3b5c8-must-be-at-least-256-bits
+  expiration: 604800000
+
+cors:
+  allowed-origins: http://localhost:5173
+
+api:
+  bangumi:
+    base-url: https://api.bgm.tv
+  tmdb:
+    base-url: https://api.themoviedb.org/3
+    api-key: your-tmdb-api-key
+    image-base-url: https://image.tmdb.org/t/p/w500
+  google-books:
+    base-url: https://www.googleapis.com/books/v1
