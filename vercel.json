@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://你的后端服务名.zeabur.app/api/:path*"
+      "destination": "https://你的容器名.b4a.app/api/:path*"
     },
     {
       "source": "/(.*)",
