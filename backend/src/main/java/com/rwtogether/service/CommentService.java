@@ -29,6 +29,7 @@ public class CommentService {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    @Transactional(readOnly = true)
     public List<CommentDto> getWorkComments(Long workId, Long userId) {
         List<Comment> comments = commentRepository.findByWorkIdOrderByCreatedAtDesc(workId);
         return comments.stream()

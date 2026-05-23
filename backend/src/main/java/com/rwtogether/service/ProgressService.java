@@ -32,6 +32,7 @@ public class ProgressService {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public List<WorkDetailDto.UserProgressDto> getWorkProgresses(Long workId, Long excludeUserId) {
         return userWorkRepository.findByWorkId(workId).stream()
                 .filter(uw -> !uw.getUser().getId().equals(excludeUserId))
