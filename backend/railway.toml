@@ -1,9 +1,0 @@
-[build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
-
-[deploy]
-startCommand = "java -Xms256m -Xmx512m -jar target/*.jar"
-healthcheckPath = "/api/auth/login"
-healthcheckTimeout = 300
-restartPolicyType = "ON_FAILURE"

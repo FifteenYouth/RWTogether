@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://rwtogether-backend-production-你的ID.up.railway.app/api/:path*"
+      "destination": "https://rwtogether-backend-你的服务名.koyeb.app/api/:path*"
     },
     {
       "source": "/(.*)",
