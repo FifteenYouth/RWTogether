@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -31,6 +32,7 @@ public class BangumiService {
                             .build(keyword))
                     .retrieve()
                     .bodyToMono(Map.class)
+                    .timeout(Duration.ofSeconds(3))
                     .block();
 
             if (result == null || result.get("list") == null) {
@@ -67,6 +69,7 @@ public class BangumiService {
                     .uri("/subject/{id}", bgmId)
                     .retrieve()
                     .bodyToMono(Map.class)
+                    .timeout(Duration.ofSeconds(3))
                     .block();
 
             if (result == null) {

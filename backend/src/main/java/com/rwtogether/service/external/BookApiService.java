@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -30,6 +31,7 @@ public class BookApiService {
                             .build())
                     .retrieve()
                     .bodyToMono(Map.class)
+                    .timeout(Duration.ofSeconds(3))
                     .block();
 
             if (result == null || result.get("items") == null) {
@@ -84,6 +86,7 @@ public class BookApiService {
                     .uri("/volumes/{id}", volumeId)
                     .retrieve()
                     .bodyToMono(Map.class)
+                    .timeout(Duration.ofSeconds(3))
                     .block();
 
             if (result == null) return Collections.emptyMap();

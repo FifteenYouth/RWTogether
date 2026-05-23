@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -45,6 +46,7 @@ public class TmdbService {
                             .build())
                     .retrieve()
                     .bodyToMono(Map.class)
+                    .timeout(Duration.ofSeconds(3))
                     .block();
 
             if (result == null || result.get("results") == null) {
@@ -106,6 +108,7 @@ public class TmdbService {
                             .build(tmdbId))
                     .retrieve()
                     .bodyToMono(Map.class)
+                    .timeout(Duration.ofSeconds(3))
                     .block();
 
             if (result == null) return Collections.emptyMap();

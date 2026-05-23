@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,20 +37,37 @@ public class WorkService {
     private final BookApiService bookApiService;
 
     public List<Map<String, Object>> searchWorks(String keyword, String type) {
-        List<Map<String, Object>> results = new ArrayList<>();
+        List<Callable<List<Map<String, Object>>>> tasks = new ArrayList<>();
 
         if (type == null || type.equals("all")) {
-            results.addAll(bangumiService.searchAnime(keyword));
-            results.addAll(tmdbService.searchTv(keyword));
-            results.addAll(tmdbService.searchMovie(keyword));
-            results.addAll(bookApiService.searchBooks(keyword));
+            tasks.add(() -> bangumiService.searchAnime(keyword));
+            tasks.add(() -> tmdbService.searchTv(keyword));
+            tasks.add(() -> tmdbService.searchMovie(keyword));
+            tasks.add(() -> bookApiService.searchBooks(keyword));
         } else {
             switch (type.toUpperCase()) {
-                case "ANIME" -> results.addAll(bangumiService.searchAnime(keyword));
-                case "DRAMA" -> results.addAll(tmdbService.searchTv(keyword));
-                case "MOVIE" -> results.addAll(tmdbService.searchMovie(keyword));
-                case "BOOK" -> results.addAll(bookApiService.searchBooks(keyword));
+                case "ANIME" -> tasks.add(() -> bangumiService.searchAnime(keyword));
+                case "DRAMA" -> tasks.add(() -> tmdbService.searchTv(keyword));
+                case "MOVIE" -> tasks.add(() -> tmdbService.searchMovie(keyword));
+                case "BOOK" -> tasks.add(() -> bookApiService.searchBooks(keyword));
             }
+        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(tasks.size());
+        List<Map<String, Object>> results = new ArrayList<>();
+        try {
+            List<Future<List<Map<String, Object>>>> futures = executor.invokeAll(tasks, 3, TimeUnit.SECONDS);
+            for (Future<List<Map<String, Object>>> future : futures) {
+                try {
+                    results.addAll(future.get());
+                } catch (Exception e) {
+                    log.warn("搜索任务失败: {}", e.getMessage());
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            executor.shutdownNow();
         }
 
         return results;
