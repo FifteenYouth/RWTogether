@@ -1,7 +1,13 @@
 <template>
-  <div class="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer work-card" @click="$emit('click')">
+  <div class="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer work-card group" @click="$emit('click')">
     <!-- 封面区域 -->
     <div class="relative h-40" :style="{ background: coverGradient }">
+      <!-- 删除按钮 -->
+      <button @click.stop="confirmDelete" class="absolute top-2 left-2 w-6 h-6 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-red-500/70 transition-colors opacity-0 group-hover:opacity-100" title="删除">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
       <!-- 类型标签 -->
       <span class="absolute top-3 right-3 px-2 py-0.5 rounded-md text-xs font-medium text-white bg-black/30 backdrop-blur-sm">
         {{ typeLabel }}
@@ -40,7 +46,13 @@ const props = defineProps({
   status: String,
 })
 
-defineEmits(['click'])
+const emit = defineEmits(['click', 'delete'])
+
+function confirmDelete() {
+  if (confirm(`确定要删除「${props.work.title}」吗？此操作不可恢复。`)) {
+    emit('delete', props.work.id)
+  }
+}
 
 const typeLabel = computed(() => {
   const map = { ANIME: '番剧', DRAMA: '电视剧', MOVIE: '电影', BOOK: '书籍' }

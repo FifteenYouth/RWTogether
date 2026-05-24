@@ -6,4 +6,5 @@ export default {
   search(q, type) { return api.get('/works/search', { params: { q, type } }) },
   create(data) { return api.post('/works', data) },
   importFromApi(data) { return api.post('/works/import', data) },
+  remove(id) { return api.delete(`/works/${id}`) },
 }

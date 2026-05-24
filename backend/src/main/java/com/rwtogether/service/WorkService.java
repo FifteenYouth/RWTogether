@@ -219,4 +219,14 @@ public class WorkService {
                 userStatus
         );
     }
+
+    @Transactional
+    public void deleteWork(Long workId) {
+        Work work = workRepository.findById(workId)
+                .orElseThrow(() -> new ResourceNotFoundException("作品不存在"));
+        // 级联删除关联数据
+        commentRepository.deleteByWorkId(workId);
+        userWorkRepository.deleteByWorkId(workId);
+        workRepository.delete(work);
+    }
 }

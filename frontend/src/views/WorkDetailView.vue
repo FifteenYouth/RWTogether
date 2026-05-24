@@ -51,6 +51,9 @@
           <button @click="showRatingModal = true" class="px-5 py-2 bg-white/[0.12] backdrop-blur-sm text-white rounded-xl text-sm font-medium hover:bg-white/20 transition-colors">
             评分
           </button>
+          <button @click="confirmDelete" class="px-5 py-2 bg-white/[0.12] backdrop-blur-sm text-red-400 rounded-xl text-sm font-medium hover:bg-red-500/20 transition-colors ml-auto">
+            删除作品
+          </button>
         </div>
       </div>
     </div>
@@ -223,6 +226,21 @@ async function submitRating() {
     await loadWork()
   } catch (e) {
     console.error('评分失败', e)
+  }
+}
+
+function confirmDelete() {
+  if (confirm(`确定要删除「${work.value?.title}」吗？此操作不可恢复。`)) {
+    deleteWork()
+  }
+}
+
+async function deleteWork() {
+  try {
+    await worksApi.remove(route.params.id)
+    router.push('/')
+  } catch (e) {
+    console.error('删除作品失败', e)
   }
 }
 

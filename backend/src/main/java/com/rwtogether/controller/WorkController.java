@@ -64,4 +64,10 @@ public class WorkController {
         work.setStatus("WANT");
         return ResponseEntity.ok(work);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        workService.deleteWork(id);
+        return ResponseEntity.noContent().build();
+    }
 }

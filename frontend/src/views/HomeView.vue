@@ -71,6 +71,7 @@
             :work="work"
             :status="work.status"
             @click="router.push(`/works/${work.id}`)"
+            @delete="deleteWork"
           />
         </div>
       </section>
@@ -168,6 +169,15 @@ async function loadWorks() {
     works.value = res.data
   } catch (e) {
     console.error('加载作品失败', e)
+  }
+}
+
+async function deleteWork(workId) {
+  try {
+    await worksApi.remove(workId)
+    works.value = works.value.filter(w => w.id !== workId)
+  } catch (e) {
+    console.error('删除作品失败', e)
   }
 }
 

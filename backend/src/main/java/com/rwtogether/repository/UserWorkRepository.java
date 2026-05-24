@@ -17,4 +17,6 @@ public interface UserWorkRepository extends JpaRepository<UserWork, Long> {
     Optional<UserWork> findByUserIdAndWorkId(Long userId, Long workId);
 
     long countByUserIdAndStatus(Long userId, UserWork.Status status);
+
+    void deleteByWorkId(Long workId);
 }
