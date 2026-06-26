@@ -1,8 +1,10 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY maven-settings.xml /root/.m2/settings.xml
 COPY pom.xml .
+RUN mvn dependency:go-offline -s /root/.m2/settings.xml -q
 COPY src ./src
-RUN apk add --no-cache maven && mvn package -DskipTests -q
+RUN mvn package -DskipTests -s /root/.m2/settings.xml -q
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app

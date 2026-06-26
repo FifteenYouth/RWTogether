@@ -33,8 +33,8 @@ api:
   bangumi:
     base-url: https://api.bgm.tv
   tmdb:
-    base-url: https://api.themoviedb.org/3
+    base-url: ${TMDB_BASE_URL:https://api.themoviedb.org/3}
     api-key: ${TMDB_API_KEY:your-tmdb-api-key}
-    image-base-url: https://image.tmdb.org/t/p/w500
+    image-base-url: ${TMDB_IMAGE_BASE_URL:https://image.tmdb.org/t/p/w500}
   google-books:
     base-url: https://www.googleapis.com/books/v1
