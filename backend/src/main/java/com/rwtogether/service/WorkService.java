@@ -4,13 +4,14 @@ import com.rwtogether.dto.CommentDto;
 import com.rwtogether.dto.ProgressDto;
 import com.rwtogether.dto.WorkDetailDto;
 import com.rwtogether.dto.WorkDto;
+import com.rwtogether.entity.Episode;
 import com.rwtogether.entity.Work;
 import com.rwtogether.exception.BusinessException;
 import com.rwtogether.exception.ResourceNotFoundException;
 import com.rwtogether.repository.CommentRepository;
+import com.rwtogether.repository.EpisodeRepository;
 import com.rwtogether.repository.UserWorkRepository;
 import com.rwtogether.repository.WorkRepository;
-import com.rwtogether.service.external.BangumiService;
 import com.rwtogether.service.external.BookApiService;
 import com.rwtogether.service.external.TmdbService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -30,9 +33,9 @@ public class WorkService {
     private final WorkRepository workRepository;
     private final UserWorkRepository userWorkRepository;
     private final CommentRepository commentRepository;
+    private final EpisodeRepository episodeRepository;
     private final ProgressService progressService;
     private final CommentService commentService;
-    private final BangumiService bangumiService;
     private final TmdbService tmdbService;
     private final BookApiService bookApiService;
 
@@ -40,14 +43,14 @@ public class WorkService {
         List<Callable<List<Map<String, Object>>>> tasks = new ArrayList<>();
 
         if (type == null || type.equals("all")) {
-            tasks.add(() -> bangumiService.searchAnime(keyword));
-            tasks.add(() -> tmdbService.searchTv(keyword));
+            // 番剧与电视剧统一来自 TMDB(tv)，按动画类型自动归类为 ANIME/DRAMA
+            tasks.add(() -> tmdbService.searchTv(keyword, null));
             tasks.add(() -> tmdbService.searchMovie(keyword));
             tasks.add(() -> bookApiService.searchBooks(keyword));
         } else {
             switch (type.toUpperCase()) {
-                case "ANIME" -> tasks.add(() -> bangumiService.searchAnime(keyword));
-                case "DRAMA" -> tasks.add(() -> tmdbService.searchTv(keyword));
+                case "ANIME" -> tasks.add(() -> tmdbService.searchTv(keyword, true));
+                case "DRAMA" -> tasks.add(() -> tmdbService.searchTv(keyword, false));
                 case "MOVIE" -> tasks.add(() -> tmdbService.searchMovie(keyword));
                 case "BOOK" -> tasks.add(() -> bookApiService.searchBooks(keyword));
             }
@@ -56,7 +59,7 @@ public class WorkService {
         ExecutorService executor = Executors.newFixedThreadPool(tasks.size());
         List<Map<String, Object>> results = new ArrayList<>();
         try {
-            List<Future<List<Map<String, Object>>>> futures = executor.invokeAll(tasks, 3, TimeUnit.SECONDS);
+            List<Future<List<Map<String, Object>>>> futures = executor.invokeAll(tasks, 12, TimeUnit.SECONDS);
             for (Future<List<Map<String, Object>>> future : futures) {
                 try {
                     results.addAll(future.get());
@@ -102,7 +105,77 @@ public class WorkService {
             work.setMetadata(metadata);
         }
 
-        return workRepository.save(work);
+        work = workRepository.save(work);
+
+        // 保存分集信息（如果有）
+        if (workData.containsKey("episodes")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> episodesData = (List<Map<String, Object>>) workData.get("episodes");
+            saveEpisodes(work, episodesData);
+        }
+
+        return work;
+    }
+
+    /**
+     * 保存分集信息
+     */
+    private void saveEpisodes(Work work, List<Map<String, Object>> episodesData) {
+        if (episodesData == null || episodesData.isEmpty()) {
+            return;
+        }
+
+        log.info("保存 {} 的分集信息，共 {} 集", work.getTitle(), episodesData.size());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
+
+        for (Map<String, Object> epData : episodesData) {
+            try {
+                Episode episode = new Episode();
+                episode.setWork(work);
+
+                // 集数
+                Object episodeNumObj = epData.get("episodeNum");
+                if (episodeNumObj != null) {
+                    episode.setEpisodeNum(episodeNumObj instanceof Number
+                            ? ((Number) episodeNumObj).intValue()
+                            : Integer.parseInt(episodeNumObj.toString()));
+                }
+
+                // 季数（默认为1，TMDB 分集会带 seasonNum）
+                Object seasonNumObj = epData.get("seasonNum");
+                if (seasonNumObj instanceof Number num) {
+                    episode.setSeasonNum(num.intValue());
+                } else {
+                    episode.setSeasonNum(1);
+                }
+
+                // 标题（优先使用中文标题）
+                String title = (String) epData.getOrDefault("titleCn", epData.get("title"));
+                episode.setTitle(title != null ? title : "");
+
+                // 播出日期
+                String airDateStr = (String) epData.get("airDate");
+                if (airDateStr != null && !airDateStr.isEmpty()) {
+                    try {
+                        episode.setAirDate(LocalDate.parse(airDateStr, formatter));
+                    } catch (Exception e) {
+                        log.warn("解析播出日期失败: {}", airDateStr);
+                    }
+                }
+
+                // 缩略图（如果有）
+                String thumbnailUrl = (String) epData.get("thumbnailUrl");
+                episode.setThumbnailUrl(thumbnailUrl != null ? thumbnailUrl : "");
+
+                episodeRepository.save(episode);
+
+            } catch (Exception e) {
+                log.error("保存分集失败: {}", e.getMessage());
+            }
+        }
+
+        log.info("分集信息保存完成");
     }
 
     public WorkDetailDto getWorkDetail(Long workId, Long userId) {
@@ -187,7 +260,6 @@ public class WorkService {
     private Map<String, Object> fetchApiDetail(String apiSource, String apiId) {
         try {
             return switch (apiSource) {
-                case "bangumi" -> bangumiService.getAnimeDetail(apiId);
                 case "tmdb" -> tmdbService.getDetail(apiId);
                 case "google_books" -> bookApiService.getBookDetail(apiId);
                 default -> Collections.emptyMap();

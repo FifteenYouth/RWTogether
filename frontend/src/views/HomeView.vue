@@ -1,114 +1,228 @@
 <template>
-  <div class="min-h-screen bg-apple-bg">
-    <!-- 顶部导航栏 -->
-    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50">
-      <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-lg">🎬</span>
-          <span class="font-bold text-apple-text tracking-tight">RWTogether</span>
-        </div>
-        <SearchBar class="flex-1 max-w-md mx-8" @search="goSearch" />
-        <div class="flex items-center gap-3">
-          <button @click="showAddModal = true" class="flex items-center gap-1.5 px-4 py-1.5 bg-apple-blue text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            添加作品
-          </button>
-          <button @click="router.push('/profile')" class="w-8 h-8 bg-apple-blue/10 rounded-full flex items-center justify-center text-apple-blue text-sm font-semibold">
-            {{ auth.user?.username?.charAt(0)?.toUpperCase() }}
-          </button>
+  <div class="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
+    <!-- 动态背景粒子效果 -->
+    <div class="fixed inset-0 opacity-30 pointer-events-none">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-anime-purple/30 rounded-full blur-[120px] animate-pulse-soft"></div>
+      <div class="absolute top-3/4 right-1/4 w-80 h-80 bg-anime-pink/30 rounded-full blur-[100px] animate-pulse-soft" style="animation-delay: 1s;"></div>
+      <div class="absolute top-1/2 left-1/2 w-72 h-72 bg-anime-cyan/20 rounded-full blur-[100px] animate-pulse-soft" style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- 浮动导航栏 -->
+    <nav class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl">
+      <div
+        class="relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl px-8 py-4 shadow-anime-xl"
+        v-motion
+        :initial="{ opacity: 0, y: -30 }"
+        :enter="{ opacity: 1, y: 0, transition: { delay: 100, type: 'spring', stiffness: 200 } }"
+      >
+        <!-- 顶部彩虹线 -->
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-anime-pink via-anime-purple to-anime-cyan"></div>
+
+        <div class="flex items-center justify-between">
+          <!-- Logo - 非对称设计 -->
+          <div class="flex items-center gap-4 group cursor-pointer">
+            <div class="relative w-12 h-12">
+              <div class="absolute inset-0 bg-gradient-to-br from-anime-purple to-anime-pink rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-500"></div>
+              <div class="absolute inset-0 bg-gradient-to-br from-anime-cyan to-anime-purple rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-500 opacity-70"></div>
+              <span class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white z-10">R</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xl font-bold bg-gradient-to-r from-white via-anime-purple-light to-anime-pink-light bg-clip-text text-transparent">
+                RWTogether
+              </span>
+              <span class="text-[10px] font-mono text-white/40 tracking-widest uppercase">追番记录</span>
+            </div>
+          </div>
+
+          <!-- 搜索框 - 磁性设计 -->
+          <div class="flex-1 max-w-md mx-8">
+            <SearchBar @search="goSearch" />
+          </div>
+
+          <!-- 右侧按钮组 -->
+          <div class="flex items-center gap-3">
+            <button
+              @click="showAddModal = true"
+              class="group relative px-6 py-3 bg-gradient-to-r from-anime-purple-deep to-anime-pink-deep rounded-2xl font-semibold text-white text-sm overflow-hidden transition-all duration-300 hover:shadow-glow-purple hover:scale-105"
+            >
+              <span class="relative z-10 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+                添加作品
+              </span>
+              <!-- 悬停光效 -->
+              <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+            </button>
+
+            <!-- 用户头像 - 发光效果 -->
+            <button
+              @click="router.push('/profile')"
+              class="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-anime-cyan to-anime-purple flex items-center justify-center font-bold text-white text-lg shadow-glow-cyan hover:scale-110 transition-all duration-300 group"
+            >
+              <span class="relative z-10">{{ auth.user?.username?.charAt(0)?.toUpperCase() }}</span>
+              <!-- 旋转边框 -->
+              <div class="absolute inset-0 rounded-2xl border-2 border-white/30 group-hover:rotate-180 transition-transform duration-700"></div>
+            </button>
+          </div>
         </div>
       </div>
     </nav>
 
-    <div class="max-w-6xl mx-auto px-6 py-8">
-      <!-- 欢迎语 -->
-      <h1 class="text-[28px] font-bold tracking-tightest text-apple-text mb-6">
-        你好，{{ auth.user?.username }}
-      </h1>
+    <!-- 主内容区 - 从顶部偏移 -->
+    <div class="pt-32 pb-16 px-6 max-w-7xl mx-auto relative z-10">
 
-      <!-- 统计卡片 -->
-      <div class="grid grid-cols-3 gap-4 mb-8">
-        <div class="bg-white rounded-2xl p-5 shadow-sm">
-          <p class="text-apple-gray text-xs font-medium mb-1">正在追</p>
-          <p class="text-3xl font-bold text-apple-blue">{{ stats.watching }}</p>
+      <!-- 欢迎区 - 非对称布局 -->
+      <div
+        class="mb-12 relative"
+        v-motion
+        :initial="{ opacity: 0, x: -50 }"
+        :enter="{ opacity: 1, x: 0, transition: { delay: 200, type: 'spring' } }"
+      >
+        <div class="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-anime-pink via-anime-purple to-transparent"></div>
+        <h1 class="text-5xl font-black text-white mb-2 tracking-tight">
+          <span class="inline-block" style="text-shadow: 0 0 30px rgba(212, 173, 252, 0.5);">
+            欢迎回来
+          </span>
+        </h1>
+        <p class="text-xl text-white/60 font-light">{{ auth.user?.username }}，继续你的追番之旅</p>
+      </div>
+
+      <!-- 统计卡片 - 浮动网格 -->
+      <div class="grid grid-cols-3 gap-6 mb-16">
+        <!-- 正在追 -->
+        <div
+          class="group relative bg-gradient-to-br from-anime-purple-deep/20 to-anime-purple/10 backdrop-blur-xl border border-white/10 rounded-3xl p-6 hover:border-anime-purple-light/50 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
+          v-motion
+          :initial="{ opacity: 0, y: 30, scale: 0.9 }"
+          :enter="{ opacity: 1, y: 0, scale: 1, transition: { delay: 300, type: 'spring', stiffness: 200 } }"
+        >
+          <!-- 背景光晕 -->
+          <div class="absolute inset-0 bg-gradient-to-br from-anime-purple/0 to-anime-purple/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono uppercase tracking-wider text-white/50">正在追</span>
+              <div class="w-2 h-2 rounded-full bg-anime-purple animate-pulse-soft"></div>
+            </div>
+            <p class="text-5xl font-black bg-gradient-to-br from-anime-purple-light to-white bg-clip-text text-transparent mb-2">
+              {{ stats.watching }}
+            </p>
+            <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-anime-purple to-anime-purple-light rounded-full w-3/4"></div>
+            </div>
+          </div>
         </div>
-        <div class="bg-white rounded-2xl p-5 shadow-sm">
-          <p class="text-apple-gray text-xs font-medium mb-1">已看完</p>
-          <p class="text-3xl font-bold text-apple-green">{{ stats.done }}</p>
+
+        <!-- 已看完 -->
+        <div
+          class="group relative bg-gradient-to-br from-green-500/20 to-emerald-500/10 backdrop-blur-xl border border-white/10 rounded-3xl p-6 hover:border-green-400/50 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
+          v-motion
+          :initial="{ opacity: 0, y: 30, scale: 0.9 }"
+          :enter="{ opacity: 1, y: 0, scale: 1, transition: { delay: 400, type: 'spring', stiffness: 200 } }"
+        >
+          <div class="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono uppercase tracking-wider text-white/50">已看完</span>
+              <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse-soft"></div>
+            </div>
+            <p class="text-5xl font-black bg-gradient-to-br from-green-300 to-white bg-clip-text text-transparent mb-2">
+              {{ stats.done }}
+            </p>
+            <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-green-500 to-green-300 rounded-full w-full"></div>
+            </div>
+          </div>
         </div>
-        <div class="bg-white rounded-2xl p-5 shadow-sm">
-          <p class="text-apple-gray text-xs font-medium mb-1">想看</p>
-          <p class="text-3xl font-bold text-apple-orange">{{ stats.want }}</p>
+
+        <!-- 想看 -->
+        <div
+          class="group relative bg-gradient-to-br from-anime-pink-deep/20 to-anime-pink/10 backdrop-blur-xl border border-white/10 rounded-3xl p-6 hover:border-anime-pink-light/50 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
+          v-motion
+          :initial="{ opacity: 0, y: 30, scale: 0.9 }"
+          :enter="{ opacity: 1, y: 0, scale: 1, transition: { delay: 500, type: 'spring', stiffness: 200 } }"
+        >
+          <div class="absolute inset-0 bg-gradient-to-br from-anime-pink/0 to-anime-pink/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono uppercase tracking-wider text-white/50">想看</span>
+              <div class="w-2 h-2 rounded-full bg-anime-pink animate-pulse-soft"></div>
+            </div>
+            <p class="text-5xl font-black bg-gradient-to-br from-anime-pink-light to-white bg-clip-text text-transparent mb-2">
+              {{ stats.want }}
+            </p>
+            <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-anime-pink-deep to-anime-pink-light rounded-full w-1/2"></div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 分类标签 -->
-      <div class="flex gap-2 mb-6">
+      <!-- 分类标签 - 流动设计 -->
+      <div class="flex gap-3 mb-10 overflow-x-auto pb-2 no-scrollbar">
         <button
-          v-for="tab in tabs"
+          v-for="(tab, index) in tabs"
           :key="tab.value"
           @click="activeTab = tab.value"
           :class="[
-            'px-4 py-1.5 rounded-full text-sm font-medium transition-all',
+            'relative px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 whitespace-nowrap group',
             activeTab === tab.value
-              ? 'bg-apple-text text-white'
-              : 'bg-gray-100 text-apple-gray hover:bg-gray-200'
+              ? 'bg-gradient-to-r from-anime-purple-deep to-anime-pink-deep text-white shadow-glow-purple scale-105'
+              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
           ]"
+          v-motion
+          :initial="{ opacity: 0, x: -20 }"
+          :enter="{ opacity: 1, x: 0, transition: { delay: 600 + index * 50 } }"
         >
-          {{ tab.label }}
+          <span class="relative z-10">{{ tab.label }}</span>
+          <!-- 活跃指示器 -->
+          <div
+            v-if="activeTab === tab.value"
+            class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-shimmer rounded-2xl"
+            style="background-size: 200% 100%;"
+          ></div>
         </button>
       </div>
 
-      <!-- 全部作品 -->
-      <section v-if="filteredWorks.length" class="mb-10">
-        <h2 class="text-lg font-semibold text-apple-text mb-4">全部作品</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- 作品列表 - 砖石布局 -->
+      <section v-if="filteredWorks.length">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <WorkCard
-            v-for="work in filteredWorks"
+            v-for="(work, index) in filteredWorks"
             :key="work.id"
             :work="work"
             :status="work.status"
+            :index="index"
             @click="router.push(`/works/${work.id}`)"
             @delete="deleteWork"
           />
         </div>
       </section>
 
-      <!-- 正在追 -->
-      <section v-if="watchingWorks.length" class="mb-10">
-        <h2 class="text-lg font-semibold text-apple-text mb-4">正在追</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <WorkCard
-            v-for="work in watchingWorks"
-            :key="work.id"
-            :work="work"
-            :status="work.status"
-            @click="router.push(`/works/${work.id}`)"
-          />
+      <!-- 空状态 - 梦幻设计 -->
+      <div
+        v-if="!filteredWorks.length"
+        class="text-center py-32"
+        v-motion
+        :initial="{ opacity: 0, scale: 0.8 }"
+        :enter="{ opacity: 1, scale: 1, transition: { delay: 400, type: 'spring' } }"
+      >
+        <div class="relative inline-block mb-6">
+          <div class="absolute inset-0 bg-anime-purple/30 blur-3xl rounded-full animate-pulse-soft"></div>
+          <p class="relative text-8xl animate-float">🌸</p>
         </div>
-      </section>
-
-      <!-- 想看 -->
-      <section v-if="wantWorks.length" class="mb-10">
-        <h2 class="text-lg font-semibold text-apple-text mb-4">想看</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <WorkCard
-            v-for="work in wantWorks"
-            :key="work.id"
-            :work="work"
-            :status="work.status"
-            @click="router.push(`/works/${work.id}`)"
-          />
-        </div>
-      </section>
-
-      <!-- 空状态 -->
-      <div v-if="!filteredWorks.length" class="text-center py-20">
-        <p class="text-5xl mb-4">🔍</p>
-        <p class="text-apple-gray text-sm">还没有任何作品</p>
-        <button @click="showAddModal = true" class="mt-4 text-apple-blue text-sm font-medium hover:underline">
+        <h3 class="text-2xl font-bold text-white mb-3">开启你的追番旅程</h3>
+        <p class="text-white/50 mb-8">还没有添加任何作品</p>
+        <button
+          @click="showAddModal = true"
+          class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-anime-purple-deep to-anime-pink-deep rounded-2xl font-semibold text-white hover:shadow-glow-purple hover:scale-105 transition-all duration-300"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
           添加第一部作品
         </button>
       </div>
@@ -144,7 +258,6 @@ const tabs = [
   { label: '阅读', value: 'BOOK' },
 ]
 
-// 按分类标签过滤的作品
 const filteredWorks = computed(() => {
   if (activeTab.value === 'all') return works.value
   return works.value.filter(w => w.type === activeTab.value)
@@ -158,7 +271,6 @@ function goSearch(q) {
 }
 
 function onWorkAdded(work) {
-  // 添加成功后刷新列表
   loadWorks()
   showAddModal.value = false
 }
@@ -185,3 +297,13 @@ onMounted(() => {
   loadWorks()
 })
 </script>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

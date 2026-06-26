@@ -2,16 +2,34 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center">
-        <!-- 遮罩 -->
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('close')"></div>
-
-        <!-- 弹窗 -->
+        <!-- 遮罩 - 添加渐变模糊 -->
         <div
-          class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
+          class="absolute inset-0 bg-gradient-to-br from-black/50 via-purple-900/20 to-black/50 backdrop-blur-md"
+          @click="$emit('close')"
           v-motion
-          :initial="{ opacity: 0, scale: 0.95, y: 20 }"
-          :enter="{ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+          :initial="{ opacity: 0 }"
+          :enter="{ opacity: 1, transition: { duration: 400 } }"
+        ></div>
+
+        <!-- 弹窗 - 增强弹簧效果 -->
+        <div
+          class="relative bg-white rounded-3xl shadow-anime-xl w-full max-w-lg mx-4 overflow-hidden border border-anime-purple-light/30"
+          v-motion
+          :initial="{ opacity: 0, scale: 0.8, y: 40 }"
+          :enter="{
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 280,
+              damping: 20,
+              mass: 0.8
+            }
+          }"
         >
+          <!-- 顶部装饰渐变 -->
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-anime-pink via-anime-purple to-anime-cyan"></div>
           <!-- 头部 -->
           <div class="px-6 pt-6 pb-4 border-b border-gray-100">
             <div class="flex items-center justify-between">
@@ -68,13 +86,23 @@
                 v-for="(item, i) in results"
                 :key="i"
                 @click="importWork(item)"
-                class="flex gap-3 p-3 rounded-xl hover:bg-apple-bg cursor-pointer transition-colors group"
+                class="flex gap-3 p-3 rounded-xl hover:bg-gradient-to-r hover:from-anime-purple-light/30 hover:to-anime-pink-light/30 cursor-pointer transition-all duration-300 group border border-transparent hover:border-anime-purple-light/50 hover:shadow-anime-sm"
                 v-motion
-                :initial="{ opacity: 0, x: -10 }"
-                :enter="{ opacity: 1, x: 0, transition: { delay: i * 50 } }"
+                :initial="{ opacity: 0, x: -20, scale: 0.95 }"
+                :enter="{
+                  opacity: 1,
+                  x: 0,
+                  scale: 1,
+                  transition: {
+                    delay: i * 60,
+                    type: 'spring',
+                    stiffness: 260,
+                    damping: 20
+                  }
+                }"
               >
-                <!-- 封面 -->
-                <div class="w-12 h-16 rounded-lg flex-shrink-0 overflow-hidden bg-gray-100">
+                <!-- 封面 - 添加悬停放大 -->
+                <div class="w-12 h-16 rounded-lg flex-shrink-0 overflow-hidden bg-gradient-to-br from-anime-purple-light to-anime-cyan-light shadow-sm group-hover:shadow-anime transition-all duration-300 group-hover:scale-105">
                   <img v-if="item.coverUrl" :src="item.coverUrl" class="w-full h-full object-cover" />
                   <div v-else class="w-full h-full flex items-center justify-center text-lg">
                     {{ typeIcon(item.type) }}
@@ -82,18 +110,18 @@
                 </div>
                 <!-- 信息 -->
                 <div class="flex-1 min-w-0">
-                  <h3 class="font-semibold text-apple-text text-sm truncate group-hover:text-apple-blue transition-colors">{{ item.title }}</h3>
+                  <h3 class="font-semibold text-apple-text text-sm truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-anime-purple-deep group-hover:to-anime-pink-deep transition-all duration-300">{{ item.title }}</h3>
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-xs text-apple-gray">{{ typeLabel(item.type) }}</span>
                     <span v-if="item.totalEpisodes" class="text-xs text-apple-gray">{{ item.totalEpisodes }} 集</span>
                   </div>
                   <p v-if="item.description" class="text-xs text-apple-gray mt-1 line-clamp-1">{{ item.description }}</p>
                 </div>
-                <!-- 添加按钮 -->
+                <!-- 添加按钮 - 增强动画 -->
                 <div class="flex-shrink-0 self-center">
-                  <div class="w-8 h-8 rounded-full bg-apple-blue/10 flex items-center justify-center text-apple-blue group-hover:bg-apple-blue group-hover:text-white transition-all">
+                  <div class="w-9 h-9 rounded-full bg-gradient-to-br from-apple-blue to-anime-purple-deep flex items-center justify-center text-white group-hover:shadow-glow-blue transition-all duration-300 group-hover:scale-110 group-hover:rotate-90">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
                 </div>
@@ -132,11 +160,23 @@
       <div v-if="showManualForm" class="fixed inset-0 z-[110] flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showManualForm = false"></div>
         <div
-          class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+          class="relative bg-white rounded-3xl shadow-anime-xl w-full max-w-md mx-4 overflow-hidden border border-anime-purple-light/30"
           v-motion
-          :initial="{ opacity: 0, scale: 0.95 }"
-          :enter="{ opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+          :initial="{ opacity: 0, scale: 0.8, y: 40 }"
+          :enter="{
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 280,
+              damping: 20,
+              mass: 0.8
+            }
+          }"
         >
+          <!-- 顶部装饰渐变 -->
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-anime-pink via-anime-purple to-anime-cyan"></div>
           <div class="px-6 pt-6 pb-4 border-b border-gray-100">
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-bold text-apple-text">手动添加</h2>

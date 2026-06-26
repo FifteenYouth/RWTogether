@@ -14,3 +14,16 @@ Thumbs.db
 frontend/.env
 .trae/
 docs/superpowers/
+
+# AI 工具 / 本地工作目录
+.claude/
+.agents/
+project-learn-rwtogether/
+skills-lock.json
+
+# 临时报告 / 调试文档
+*_REPORT.md
+*_ISSUE.md
+*_COMPLETE.md
+*_ANALYSIS.md
+TEST_GUIDE.md
