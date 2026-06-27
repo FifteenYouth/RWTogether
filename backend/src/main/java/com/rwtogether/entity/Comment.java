@@ -38,6 +38,9 @@ public class Comment {
     @Column(name = "episode_num")
     private Integer episodeNum;
 
+    @Column(name = "season_num")
+    private Integer seasonNum;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Comment parent;

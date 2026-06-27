@@ -39,7 +39,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto addComment(Long userId, Long workId, String content, String type, Integer episodeNum) {
+    public CommentDto addComment(Long userId, Long workId, String content, String type, Integer episodeNum, Integer seasonNum) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("用户不存在"));
         Work work = workRepository.findById(workId)
@@ -51,6 +51,7 @@ public class CommentService {
         comment.setContent(content);
         comment.setType(Comment.CommentType.valueOf(type != null ? type : "REVIEW"));
         comment.setEpisodeNum(episodeNum);
+        comment.setSeasonNum(seasonNum);
 
         commentRepository.save(comment);
         return toDto(comment, userId);
@@ -103,6 +104,7 @@ public class CommentService {
         dto.setContent(comment.getContent());
         dto.setType(comment.getType().name());
         dto.setEpisodeNum(comment.getEpisodeNum());
+        dto.setSeasonNum(comment.getSeasonNum());
         dto.setParentId(comment.getParent() != null ? comment.getParent().getId() : null);
         dto.setCreatedAt(comment.getCreatedAt().format(FMT));
         dto.setLikeCount(likeRepository.countByCommentId(comment.getId()));

@@ -2,11 +2,29 @@
   <div class="space-y-4">
     <!-- 分集统计卡片 -->
     <div class="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-white">分集列表</h3>
+      <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
+        <div class="flex items-center gap-4">
+          <h3 class="text-lg font-bold text-white">分集列表</h3>
+
+          <!-- 季选择器 (仅多季作品显示) -->
+          <div v-if="seasons.length > 1" class="relative">
+            <select
+              v-model.number="currentSeason"
+              class="appearance-none bg-white/5 border border-white/10 hover:border-anime-purple-light/50 rounded-xl pl-4 pr-9 py-2 text-sm font-semibold text-white focus:outline-none focus:border-anime-purple-light/50 transition-all cursor-pointer"
+            >
+              <option v-for="s in seasons" :key="s" :value="s" class="bg-slate-900 text-white">
+                {{ seasonLabel(s) }}
+              </option>
+            </select>
+            <svg class="w-4 h-4 text-white/50 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
         <div class="flex items-center gap-4 text-sm">
           <span class="text-white/60">
-            已看 <span class="text-anime-purple-light font-bold">{{ watchedCount }}</span> / {{ episodes.length }} 集
+            已看 <span class="text-anime-purple-light font-bold">{{ watchedCount }}</span> / {{ visibleEpisodes.length }} 集
           </span>
           <div class="h-2 w-32 bg-white/10 rounded-full overflow-hidden">
             <div
@@ -20,7 +38,7 @@
       <!-- 分集列表 -->
       <div class="space-y-2">
         <div
-          v-for="(episode, index) in episodes"
+          v-for="(episode, index) in visibleEpisodes"
           :key="episode.id"
           class="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-anime-purple-light/50 rounded-xl p-4 transition-all duration-300 cursor-pointer"
           @click="toggleWatched(episode)"
@@ -84,7 +102,7 @@
 
             <!-- 评论按钮 -->
             <button
-              @click.stop="$emit('comment', episode.episodeNum)"
+              @click.stop="$emit('comment', episode.episodeNum, episode.seasonNum)"
               class="px-3 py-1.5 bg-white/5 hover:bg-anime-purple/20 border border-white/10 hover:border-anime-purple-light/50 rounded-lg text-xs font-medium text-white/60 hover:text-anime-purple-light transition-all duration-200"
             >
               评论
@@ -97,7 +115,7 @@
       </div>
 
       <!-- 空状态 -->
-      <div v-if="episodes.length === 0" class="text-center py-12">
+      <div v-if="visibleEpisodes.length === 0" class="text-center py-12">
         <p class="text-white/40 text-sm">暂无分集信息</p>
       </div>
     </div>
@@ -119,11 +137,27 @@ const emit = defineEmits(['comment', 'progress-updated'])
 
 const episodes = ref([])
 const loading = ref(false)
+const currentSeason = ref(1)
 
-const watchedCount = computed(() => episodes.value.filter(ep => ep.watched).length)
+// 所有出现过的季编号（升序去重）；无 seasonNum 的归为第 1 季
+const seasons = computed(() => {
+  const nums = episodes.value.map(ep => ep.seasonNum || 1)
+  return [...new Set(nums)].sort((a, b) => a - b)
+})
+
+// 当前季的分集
+const visibleEpisodes = computed(() =>
+  episodes.value.filter(ep => (ep.seasonNum || 1) === currentSeason.value)
+)
+
+function seasonLabel(s) {
+  return s === 0 ? '特别篇' : `第 ${s} 季`
+}
+
+const watchedCount = computed(() => visibleEpisodes.value.filter(ep => ep.watched).length)
 const progressPercent = computed(() => {
-  if (episodes.value.length === 0) return 0
-  return Math.round((watchedCount.value / episodes.value.length) * 100)
+  if (visibleEpisodes.value.length === 0) return 0
+  return Math.round((watchedCount.value / visibleEpisodes.value.length) * 100)
 })
 
 async function loadEpisodes() {
@@ -131,6 +165,10 @@ async function loadEpisodes() {
   try {
     const res = await episodesApi.list(props.workId)
     episodes.value = res.data
+    // 默认选中第一个有集数的季
+    if (seasons.value.length && !seasons.value.includes(currentSeason.value)) {
+      currentSeason.value = seasons.value[0]
+    }
   } catch (e) {
     console.error('加载分集失败', e)
   } finally {

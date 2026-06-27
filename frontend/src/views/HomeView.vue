@@ -58,11 +58,11 @@
             <!-- 用户头像 - 发光效果 -->
             <button
               @click="router.push('/profile')"
-              class="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-anime-cyan to-anime-purple flex items-center justify-center font-bold text-white text-lg shadow-glow-cyan hover:scale-110 transition-all duration-300 group"
+              class="relative w-12 h-12 rounded-2xl hover:scale-110 transition-all duration-300 group"
             >
-              <span class="relative z-10">{{ auth.user?.username?.charAt(0)?.toUpperCase() }}</span>
+              <UserAvatar :avatar="auth.user?.avatar" :username="auth.user?.username" size="md" />
               <!-- 旋转边框 -->
-              <div class="absolute inset-0 rounded-2xl border-2 border-white/30 group-hover:rotate-180 transition-transform duration-700"></div>
+              <div class="absolute inset-0 rounded-2xl border-2 border-white/30 group-hover:rotate-180 transition-transform duration-700 pointer-events-none"></div>
             </button>
           </div>
         </div>
@@ -241,14 +241,23 @@ import worksApi from '../api/works'
 import WorkCard from '../components/WorkCard.vue'
 import SearchBar from '../components/SearchBar.vue'
 import AddWorkModal from '../components/AddWorkModal.vue'
+import UserAvatar from '../components/UserAvatar.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 
 const activeTab = ref('all')
 const works = ref([])
-const stats = ref({ watching: 0, done: 0, want: 0 })
 const showAddModal = ref(false)
+
+const stats = computed(() => {
+  const count = (s) => works.value.filter(w => w.status === s).length
+  return {
+    watching: count('WATCHING'),
+    done: count('DONE'),
+    want: count('WANT'),
+  }
+})
 
 const tabs = [
   { label: '全部', value: 'all' },

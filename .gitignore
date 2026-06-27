@@ -27,3 +27,7 @@ skills-lock.json
 *_COMPLETE.md
 *_ANALYSIS.md
 TEST_GUIDE.md
+
+# 用户上传文件
+backend/uploads/
+uploads/

@@ -21,11 +21,22 @@
 
       <!-- 封面区域 - 非对称设计 -->
       <div class="relative h-48 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
-        <!-- 动态渐变背景 -->
+        <!-- 封面图片 -->
+        <img
+          v-if="work.coverUrl && !coverBroken"
+          :src="work.coverUrl"
+          :alt="work.title"
+          class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          @error="coverBroken = true"
+        />
+        <!-- 动态渐变背景（无封面时作为占位） -->
         <div class="absolute inset-0 opacity-40" :style="{ background: coverGradient }"></div>
 
+        <!-- 图片上的暗角渐变，保证标签可读 -->
+        <div v-if="work.coverUrl && !coverBroken" class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-slate-900/40"></div>
+
         <!-- 网格纹理 -->
-        <div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, white 2px, white 3px), repeating-linear-gradient(90deg, transparent, transparent 2px, white 2px, white 3px);"></div>
+        <div v-if="!work.coverUrl || coverBroken" class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, white 2px, white 3px), repeating-linear-gradient(90deg, transparent, transparent 2px, white 2px, white 3px);"></div>
 
         <!-- 删除按钮 - 磁性设计 -->
         <button
@@ -136,13 +147,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   work: Object,
   status: String,
   index: { type: Number, default: 0 },
 })
+
+const coverBroken = ref(false)
 
 const emit = defineEmits(['click', 'delete'])
 

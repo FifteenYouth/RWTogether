@@ -440,9 +440,9 @@ async function deleteWork() {
   }
 }
 
-function scrollToComments(episodeNum) {
+function scrollToComments(episodeNum, seasonNum) {
   // 切换到分集感想标签并定位到该集
-  commentSectionRef.value?.focusEpisode(episodeNum)
+  commentSectionRef.value?.focusEpisode(episodeNum, seasonNum)
   if (commentsSection.value) {
     commentsSection.value.scrollIntoView({ behavior: 'smooth' })
   }

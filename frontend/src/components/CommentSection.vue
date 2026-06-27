@@ -44,16 +44,16 @@
       </button>
       <button
         v-for="ep in episodeChips"
-        :key="ep"
-        @click="episodeFilter = ep"
+        :key="ep.key"
+        @click="episodeFilter = ep.key"
         :class="[
           'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200',
-          episodeFilter === ep
+          episodeFilter === ep.key
             ? 'bg-anime-purple/30 border border-anime-purple-light/50 text-anime-purple-light'
             : 'bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10'
         ]"
       >
-        第 {{ ep }} 集
+        {{ ep.label }}
       </button>
     </div>
 
@@ -75,9 +75,19 @@
           ></textarea>
 
           <div class="flex items-center justify-between mt-3">
-            <!-- 集数选择 (仅分集感想) -->
+            <!-- 季+集选择 (仅分集感想) -->
             <div v-if="activeTab === 'THOUGHT'" class="flex items-center gap-3">
-              <span class="text-sm font-medium text-white/60">集数</span>
+              <template v-if="isMultiSeason">
+                <span class="text-sm font-medium text-white/60">季</span>
+                <input
+                  v-model="seasonNum"
+                  type="number"
+                  min="1"
+                  placeholder="S"
+                  class="w-16 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm text-center focus:outline-none focus:border-anime-purple-light/50 placeholder-white/40"
+                />
+              </template>
+              <span class="text-sm font-medium text-white/60">集</span>
               <input
                 v-model="episodeNum"
                 type="number"
@@ -86,7 +96,7 @@
                 placeholder="EP"
                 class="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm text-center focus:outline-none focus:border-anime-purple-light/50 placeholder-white/40"
               />
-              <span class="text-xs text-white/40">/ {{ totalEpisodes || '?' }}</span>
+              <span v-if="!isMultiSeason" class="text-xs text-white/40">/ {{ totalEpisodes || '?' }}</span>
             </div>
 
             <div v-else class="flex-1"></div>
@@ -138,7 +148,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
                 </svg>
-                第 {{ comment.episodeNum }} 集
+                {{ thoughtLabel(comment.seasonNum, comment.episodeNum) }}
               </span>
             </div>
 
@@ -248,6 +258,7 @@ const emit = defineEmits(['refresh'])
 const activeTab = ref('REVIEW')
 const newComment = ref('')
 const episodeNum = ref(null)
+const seasonNum = ref(1)
 const episodeFilter = ref(null)
 const replyingTo = ref(null)
 const replyContent = ref('')
@@ -258,20 +269,43 @@ const currentUserInitial = computed(() => {
   return user.username?.charAt(0)?.toUpperCase() || '我'
 })
 
-// 分集感想中出现过的集数（升序，去重）
+// 季+集的唯一标识
+function epKey(season, ep) {
+  return `s${season || 1}e${ep}`
+}
+
+// 是否多季作品：评论里出现过 >1 的季编号
+const isMultiSeason = computed(() => {
+  if (!props.comments) return false
+  return props.comments.some(c => (c.seasonNum || 1) > 1)
+})
+
+// 单条分集感想的展示标签
+function thoughtLabel(season, ep) {
+  return isMultiSeason.value ? `第 ${season || 1} 季 第 ${ep} 集` : `第 ${ep} 集`
+}
+
+// 分集感想中出现过的（季,集）组合（去重，按季再按集升序）
 const episodeChips = computed(() => {
   if (!props.comments) return []
-  const nums = props.comments
+  const seen = new Map()
+  props.comments
     .filter(c => c.type === 'THOUGHT' && c.episodeNum != null)
-    .map(c => c.episodeNum)
-  return [...new Set(nums)].sort((a, b) => a - b)
+    .forEach(c => {
+      const s = c.seasonNum || 1
+      const key = epKey(s, c.episodeNum)
+      if (!seen.has(key)) {
+        seen.set(key, { key, season: s, episode: c.episodeNum, label: thoughtLabel(s, c.episodeNum) })
+      }
+    })
+  return [...seen.values()].sort((a, b) => a.season - b.season || a.episode - b.episode)
 })
 
 const filteredComments = computed(() => {
   if (!props.comments) return []
   let list = props.comments.filter(c => c.type === activeTab.value)
   if (activeTab.value === 'THOUGHT' && episodeFilter.value != null) {
-    list = list.filter(c => c.episodeNum === episodeFilter.value)
+    list = list.filter(c => epKey(c.seasonNum, c.episodeNum) === episodeFilter.value)
   }
   return list
 })
@@ -293,6 +327,7 @@ async function submitComment() {
 
     if (activeTab.value === 'THOUGHT') {
       data.episodeNum = parseInt(episodeNum.value)
+      data.seasonNum = parseInt(seasonNum.value) || 1
     }
 
     await commentsApi.create(props.workId, data)
@@ -347,12 +382,13 @@ function formatDate(dateStr) {
   })
 }
 
-// 由父组件调用：从分集列表点击"评论"时，切换到分集感想并定位集数
-function focusEpisode(num) {
+// 由父组件调用：从分集列表点击"评论"时，切换到分集感想并定位季+集
+function focusEpisode(num, season) {
   activeTab.value = 'THOUGHT'
   if (num != null) {
     episodeNum.value = num
-    episodeFilter.value = num
+    seasonNum.value = season || 1
+    episodeFilter.value = epKey(season, num)
   }
 }
 

@@ -8,6 +8,11 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:rwtogether123}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -38,3 +43,7 @@ api:
     image-base-url: ${TMDB_IMAGE_BASE_URL:https://image.tmdb.org/t/p/w500}
   google-books:
     base-url: https://www.googleapis.com/books/v1
+
+app:
+  upload:
+    dir: ${APP_UPLOAD_DIR:./uploads}

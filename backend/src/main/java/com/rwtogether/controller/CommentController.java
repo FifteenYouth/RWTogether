@@ -31,7 +31,9 @@ public class CommentController {
         String type = (String) body.getOrDefault("type", "REVIEW");
         Integer episodeNum = body.get("episodeNum") != null
                 ? ((Number) body.get("episodeNum")).intValue() : null;
-        return ResponseEntity.ok(commentService.addComment(userId, workId, content, type, episodeNum));
+        Integer seasonNum = body.get("seasonNum") != null
+                ? ((Number) body.get("seasonNum")).intValue() : null;
+        return ResponseEntity.ok(commentService.addComment(userId, workId, content, type, episodeNum, seasonNum));
     }
 
     @PostMapping("/api/comments/{id}/reply")

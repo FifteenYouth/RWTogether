@@ -18,6 +18,7 @@ public class CommentDto {
     private String content;
     private String type;
     private Integer episodeNum;
+    private Integer seasonNum;
     private Long parentId;
     private String createdAt;
     private long likeCount;
